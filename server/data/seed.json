@@ -39,10 +39,10 @@
     }
   ],
   "clients": [
-    { "id": "seed-c1", "name": "", "title": "Associate Principal", "company": "CannonDesign", "type": "A&D", "region": "Seattle, WA", "notes": "Example contact. Big workplace & healthcare practice." },
-    { "id": "seed-c2", "name": "", "title": "Principal / Interior Design", "company": "Convergence Architecture", "type": "A&D", "region": "Portland, OR", "notes": "Example contact. Student housing + civic." },
-    { "id": "seed-c3", "name": "", "title": "Principal", "company": "Copper Hues Interior Design", "type": "A&D", "region": "Portland, OR", "notes": "Example contact. Hospitality & senior living interiors." },
-    { "id": "seed-c4", "name": "", "title": "Business Owner", "company": "Regional Flooring Contractor", "type": "GC", "region": "Oregon", "notes": "Example contact. Installs across the metro." }
+    { "id": "seed-c1", "name": "", "title": "Associate Principal", "company": "CannonDesign", "type": "A&D", "region": "Seattle, WA", "lastTouch": "2026-10-28", "notes": "Example contact. Big workplace & healthcare practice." },
+    { "id": "seed-c2", "name": "", "title": "Principal / Interior Design", "company": "Convergence Architecture", "type": "A&D", "region": "Portland, OR", "lastTouch": "2026-08-15", "notes": "Example contact. Student housing + civic." },
+    { "id": "seed-c3", "name": "", "title": "Principal", "company": "Copper Hues Interior Design", "type": "A&D", "region": "Portland, OR", "notes": "Example contact. Hospitality & senior living interiors — no touch logged yet." },
+    { "id": "seed-c4", "name": "", "title": "Business Owner", "company": "Regional Flooring Contractor", "type": "GC", "region": "Oregon", "lastTouch": "2026-06-20", "notes": "Example contact. Installs across the metro." }
   ],
   "leads": [
     { "id": "seed-l1", "name": "", "title": "Commercial Furniture Designer", "company": "Freelance / FF&E", "region": "US", "source": "LinkedIn", "status": "New", "fit": 3, "angle": "Example lead. FF&E designer — could pull flooring into furniture specs." },
@@ -56,9 +56,13 @@
     { "id": "seed-r5", "name": "Mannington Commercial", "products": "Carpet, LVT, resilient, rubber", "strength": "Service reputation, healthcare & education niches.", "weakness": "Smaller footprint; outflank on global account support." }
   ],
   "products": [
-    { "id": "seed-p1", "name": "Modular carpet tile (core line)", "category": "Modular carpet", "bestFor": "Workplace, education, multifamily corridors", "notes": "Placeholder — replace with your actual Milliken collection names. Lead with pattern/colorway range, durability and warranty." },
-    { "id": "seed-p2", "name": "Resilient / LVT", "category": "LVT", "bestFor": "Senior living, healthcare, high-traffic", "notes": "Placeholder. Note moisture performance, acoustics, and cleanability." },
-    { "id": "seed-p3", "name": "Entryway systems", "category": "Entryway", "bestFor": "Lobbies, high-traffic entrances", "notes": "Placeholder. Protects the rest of the floor; good attach/upsell." }
+    { "id": "seed-p1", "name": "Carpet tile (modular)", "category": "Modular carpet", "bestFor": "Workplace, education, senior living, multifamily corridors", "notes": "Core line. Lead with WellBAC cushion backing: up to ~24% less muscle fatigue, acoustic + moisture benefits, and up to ~50% longer life vs. hardback tiles. PVC-free, verified Red List Free, M/PACT carbon-offset." },
+    { "id": "seed-p2", "name": "PrintWorks custom-print carpet tile", "category": "Modular carpet", "bestFor": "Branded workplace, hospitality, feature areas", "notes": "Design differentiator — quick-turn custom through fully bespoke prints and wide palettes. Great hook for designers who want something distinctive." },
+    { "id": "seed-p3", "name": "Resilient / LVT", "category": "LVT", "bestFor": "Senior living, healthcare, high-traffic", "notes": "Pair with the soft-surface story. Note moisture management, acoustics and cleanability for healthcare/senior living." },
+    { "id": "seed-p4", "name": "OBEX entrance flooring", "category": "Entryway", "bestFor": "Lobbies, high-traffic entrances", "notes": "Entrance systems stop dirt/moisture at the door and protect the rest of the floor — strong attach/upsell on any project." },
+    { "id": "seed-p5", "name": "Broadloom & rugs", "category": "Broadloom", "bestFor": "Hospitality, corporate, senior living common areas", "notes": "Broadloom and custom rugs for softer, residential-feel spaces." },
+    { "id": "seed-p6", "name": "HybridFORM", "category": "Other", "bestFor": "Flexible installs", "notes": "Hybrid construction option — position where the project needs a middle ground between soft and hard surface." },
+    { "id": "seed-p7", "name": "Sustainability programs (M/PACT + N/XT Life)", "category": "Other", "bestFor": "Projects with LEED/WELL or green goals", "notes": "M/PACT: carpet, resilient and entrance tiles globally carbon-offset. N/XT Life: reclamation / second life for used carpet tile (landfill diversion). PVC-free, verified Red List Free. Offer EPD/HPD support and CEU training." }
   ],
   "plans": [
     {
