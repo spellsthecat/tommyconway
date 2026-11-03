@@ -338,7 +338,8 @@ const IC={
   settings:'M12 15a3 3 0 100-6 3 3 0 000 6z M19 12a7 7 0 00-.1-1l2-1.6-2-3.4-2.4 1a7 7 0 00-1.7-1l-.4-2.6H9.6l-.4 2.6a7 7 0 00-1.7 1l-2.4-1-2 3.4L3.1 11a7 7 0 000 2l-2 1.6 2 3.4 2.4-1a7 7 0 001.7 1l.4 2.6h4.8l.4-2.6a7 7 0 001.7-1l2.4 1 2-3.4-2-1.6c.1-.3.1-.7.1-1z',
   plus:'M12 5v14M5 12h14', edit:'M12 20h9 M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z', trash:'M3 6h18 M8 6V4h8v2 M19 6l-1 14H6L5 6', spark:'M12 2v4M12 18v4M2 12h4M18 12h4M5 5l3 3M16 16l3 3M19 5l-3 3M8 16l-3 3', refresh:'M21 12a9 9 0 11-3-6.7L21 8 M21 3v5h-5',
   followups:'M12 7v5l3 2 M12 21a9 9 0 100-18 9 9 0 000 18z', clock:'M12 7v5l3 2 M12 21a9 9 0 100-18 9 9 0 000 18z',
-  note:'M4 4h16v12l-4 4H4z M14 20v-4h4 M8 9h8 M8 13h5'
+  note:'M4 4h16v12l-4 4H4z M14 20v-4h4 M8 9h8 M8 13h5',
+  warm:'M12 3c2 3.5 4 5 4 8a4 4 0 11-8 0c0-1.3.6-2.3 1.2-3 M12 13.5a2.5 2.5 0 100 5 2.5 2.5 0 000-5z'
 };
 const svg=(d,cls='ic')=>`<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d.split(' M').map((p,i)=>`<path d="${i?'M'+p:p}"/>`).join('')}</svg>`;
 
@@ -722,6 +723,21 @@ async function clientPrep(c){
 /* ----- LEADS ----- */
 const siteUrl=co=>co?('https://duckduckgo.com/?q='+encodeURIComponent('\\'+co)):null;
 const liUrl=(n,co)=>'https://www.linkedin.com/search/results/people/?keywords='+encodeURIComponent(((n||'').replace(/,.*$/,''))+' '+(co||'')).trim();
+const WARMUP={
+ 'Architecture / Design':{title:'Warm up an A&D specifier',steps:['Re-engage on LinkedIn — like or comment on a recent post or project (you’re already connected).','Offer an AIA-accredited lunch-and-learn CEU: PVC-free, WellBAC acoustics, PrintWorks, Red List Free / M-PACT.','Send a sample box of a collection that fits their sector.','Ask to be added to their firm’s materials / resource library.','Invite them to a showroom visit or project walk-through.'],note:'A&D warms through education and presence — lead with something useful to them, not a pitch.'},
+ 'GC / Construction':{title:'Warm up a GC / builder',steps:['LinkedIn touch — congratulate on a recent project win or milestone.','Offer a precon / PM lunch-and-learn and ask what’s in their pipeline.','Share budget pricing + lead times so you’re easy to include.','Get onto their standard flooring bid list.','Offer bid-day spec-protection support on their next job.'],note:'GCs warm when you make their job easier — pricing, lead times, reliability.'},
+ 'Facilities / Property / RE':{title:'Warm up an owner / facilities lead',steps:['Reconnect on LinkedIn with a relevant case study from their sector.','Offer a portfolio flooring-standard review — durability, moisture, IAQ, total cost.','Propose a pilot on a single property or floor.','Share the sustainability story (M/PACT, N/XT Life, PVC-free) for ESG goals.','Set a quarterly check-in to stay on the standard.'],note:'Owners warm around a standard and lifecycle value, not a one-off sale.'},
+ 'Flooring / Surfaces':{title:'Nurture an industry contact',steps:['Keep it a relationship, not a sale — a periodic, genuine check-in.','Explore a channel / partnership (install capacity, leads both ways).','Trade project intel where it helps you both.'],note:'This is a peer or partner, not a prospect — play the long game.'},
+};
+function warmupPlay(l){ return WARMUP[l.tag]||{title:'Warm up this lead',steps:['Reconnect on LinkedIn with something useful to them.','Find the project or need, then match a Milliken product + the sustainability story.','Offer a lunch-and-learn or samples; get on their spec / bid list.'],note:'Lead with value; match Milliken to their actual sector and need.'}; }
+function showWarmup(l){ const p=warmupPlay(l); const body=el('div',{});
+  body.append(el('p',{class:'muted',style:'margin-top:0'}, (l.name||'This lead')+(l.company?(' · '+l.company):'')+(l.priority?(' — '+l.priority+' priority'):'')));
+  if(l.angle) body.append(el('div',{class:'mini',style:'background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:12px;line-height:1.5'}, l.angle));
+  const ol=el('div',{}); p.steps.forEach((s,i)=>{ ol.append(el('div',{style:'display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)'}, el('div',{style:'flex:0 0 22px;height:22px;border-radius:50%;background:var(--accent-soft);color:var(--accent-ink);display:grid;place-items:center;font-size:12px;font-weight:700'},String(i+1)), el('div',{style:'font-size:13.5px;line-height:1.5'},s))); });
+  body.append(ol, el('p',{class:'mini faint',style:'margin:12px 0 0'},'💡 '+p.note),
+    el('div',{class:'row',style:'margin-top:14px'}, el('button',{class:'btn primary',onclick:()=>{closeModal();draftOutreach(l);}},iconLabel('spark','Draft the first message'))));
+  openModal(p.title, body, {});
+}
 VIEWS.leads=(root)=>{
   $('#pageSub').textContent='Prospecting & outreach';
   $('#topActions').append(el('button',{class:'btn primary',onclick:()=>editLead()}, iconLabel('plus','Add lead')));
@@ -751,6 +767,7 @@ VIEWS.leads=(root)=>{
         td(chip(l.status||'New',leadStatusChip(l.status))),
         td(el('a',{href:liUrl(l.name,l.company),target:'_blank',rel:'noopener',class:'mini',style:'color:var(--blue);text-decoration:none',title:'Find on LinkedIn'},'LinkedIn ↗')),
         td(el('div',{class:'rowacts'},
+          el('button',{class:'iconbtn',title:'How to warm this lead',onclick:()=>showWarmup(l),html:svg(IC.warm,'ic')}),
           el('button',{class:'iconbtn',title:'Draft outreach',onclick:()=>draftOutreach(l),html:svg(IC.spark,'ic')}),
           el('button',{class:'iconbtn',title:'Edit',onclick:()=>editLead(l.id),html:svg(IC.edit,'ic')}),
           el('button',{class:'iconbtn danger',title:'Delete',onclick:()=>confirmDel(l.name||'lead',async()=>{await API.remove('leads',l.id);S.leads=S.leads.filter(x=>x.id!==l.id);draw();drawChips();renderNav();closeModal();toast('Deleted');}),html:svg(IC.trash,'ic')})
