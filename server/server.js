@@ -165,31 +165,131 @@ async function callOpenAI(system, messages, max_tokens) {
 }
 async function safeErr(r) { try { const j = await r.json(); return (j.error?.message || JSON.stringify(j)).slice(0, 200); } catch { return ''; } }
 
+// Small helper so brief/prep can reuse whichever provider is configured.
+async function aiText(system, userContent, max_tokens) {
+  const provider = providerName();
+  const msgs = [{ role: 'user', content: userContent }];
+  if (provider === 'openai') return await callOpenAI(system, msgs, max_tokens);
+  return await callAnthropic(system, msgs, max_tokens);
+}
+
+const MILLIKEN_CONTEXT =
+  'Tom sells Milliken commercial flooring. Portfolio: carpet tile (incl. PrintWorks custom print), ' +
+  'resilient/LVT, broadloom & rugs, OBEX entrance flooring, HybridFORM, installation + quick-ship products. ' +
+  'Key differentiators: WellBAC cushion backing (up to 24% less muscle fatigue, acoustics + moisture management, ' +
+  'up to 50% longer life vs hardback), PrintWorks design flexibility; sustainability via M/PACT (carbon-offset tiles), ' +
+  'N/XT Life reclamation/second-life, PVC-free, verified Red List Free; plus design consultation, custom development, ' +
+  'installation, reclamation and CEU training. Sectors: workplace, healthcare, senior living & multifamily, education, ' +
+  'government, hospitality. Main competitors: Shaw Contract, Patcraft, Mohawk Group, Interface, Tarkett, Mannington.';
+
+// AI daily brief — turns current headlines + pipeline into a tight morning plan.
+app.post('/api/brief', async (req, res) => {
+  if (!aiConfigured) return res.status(400).json({ error: 'AI is not configured. Add an API key in server/.env and restart.' });
+  const { headlines = [], pipeline = [], context = '' } = req.body || {};
+  const hl = headlines.slice(0, 25).map(h => `- ${h.title}${h.source ? ' (' + h.source + ')' : ''}`).join('\n');
+  const pl = pipeline.slice(0, 15).map(d => `- ${d.client || d.name || 'Deal'}: ${d.stage || d.status || ''}${d.value ? ' ($' + d.value + ')' : ''}`).join('\n');
+  try {
+    const text = await aiText(
+      'You are the sales chief of staff for a commercial flooring Global Account Manager at Milliken. Be concise, specific and action-oriented. ' + MILLIKEN_CONTEXT,
+      `Write this morning's brief for Tom. Use these sections exactly:\n` +
+      `**Top 3 moves today** — concrete, named actions.\n` +
+      `**Headlines that matter** — 3-5 items, each with one line on why it matters to a flooring GAM and an angle to use.\n` +
+      `**Pipeline nudges** — who to touch and why.\nKeep it tight; no fluff.\n\n` +
+      `HEADLINES:\n${hl || '(none loaded)'}\n\nPIPELINE:\n${pl || '(none)'}\n\n${context}`,
+      900);
+    res.json({ text });
+  } catch (e) { res.status(502).json({ error: 'Brief failed: ' + e.message }); }
+});
+
+// AI meeting prep — a one-pager for a selected contact/account.
+app.post('/api/prep', async (req, res) => {
+  if (!aiConfigured) return res.status(400).json({ error: 'AI is not configured. Add an API key in server/.env and restart.' });
+  const { contact = {}, headlines = [] } = req.body || {};
+  const hl = headlines.slice(0, 12).map(h => `- ${h.title}`).join('\n');
+  try {
+    const text = await aiText(
+      'You prep a Milliken commercial flooring account manager for meetings with architects, designers and corporate accounts. Be specific and brief. ' + MILLIKEN_CONTEXT,
+      `Build a one-page meeting prep. Use these sections:\n` +
+      `**Who / what** — one line.\n**Openers** — 2-3 tailored talking points.\n` +
+      `**What to bring** — specific Milliken assets (samples, CEUs, EPD/Red List Free proof, WellBAC/PrintWorks/M-PACT story, sector case studies).\n` +
+      `**The ask** — the single thing that advances this.\n\n` +
+      `CONTACT / ACCOUNT:\n${JSON.stringify(contact).slice(0, 1500)}\n\nRECENT RELEVANT HEADLINES:\n${hl || '(none)'}`,
+      800);
+    res.json({ text });
+  } catch (e) { res.status(502).json({ error: 'Prep failed: ' + e.message }); }
+});
+
 /* ============================================================
    News (RSS/Atom) — server-side fetch + parse + cache
    ============================================================ */
 // Google News RSS query builder (reliable; supports site: and boolean operators)
 const gn = q => 'https://news.google.com/rss/search?q=' + encodeURIComponent(q) + '&hl=en-US&gl=US&ceid=US:en';
-const DEFAULT_FEEDS = [
-  // --- Flooring trade publications (via Google News, so no fragile site RSS needed) ---
-  gn('commercial flooring site:floordaily.net'),
-  gn('commercial flooring site:floortrendsmag.com'),
-  gn('flooring site:fcnews.net OR site:floorcoveringnews.net'),
-  gn('flooring commercial interiors site:interiorsandsources.com OR site:contractdesign.com'),
-  // --- A direct WordPress feed as a bonus source (skipped gracefully if unavailable) ---
-  'https://floordaily.net/feed/',
-  // --- Milliken's world: categories & what Tom sells ---
-  gn('"carpet tile" OR "modular flooring" commercial'),
-  gn('commercial flooring sustainability PVC-free OR "Red List" OR EPD OR Declare'),
-  gn('commercial "resilient flooring" OR "luxury vinyl tile" specification'),
-  // --- Competitive set (incl. Milliken) ---
-  gn('Milliken flooring OR Interface flooring OR Tarkett OR "Mohawk Group" OR "Shaw Contract" OR Patcraft'),
-  // --- Tom's sectors ---
-  gn('senior living OR healthcare flooring commercial interior design'),
-  gn('student housing OR multifamily flooring design'),
-  gn('workplace office design flooring specification architecture'),
+
+// An account-trigger query: real-estate / expansion signals that mean a floor
+// may be specified soon. Fed by Tom's watchlist (editable in Settings).
+const triggerQuery = name =>
+  gn(`"${name}" (headquarters OR campus OR office OR expansion OR renovation OR "new facility" OR relocation OR lease OR "breaks ground" OR "ground breaking")`);
+
+// Sensible default target accounts (Tom can edit these in Settings → Watchlist).
+const DEFAULT_ACCOUNTS = ['Nike', 'Meta', 'Amazon', 'Google', 'senior living developer', 'airport terminal'];
+
+// Free, categorized intel feeds. Everything here runs through Google News RSS
+// (no paid data), so it costs nothing and never needs an API key.
+const FEED_GROUPS = {
+  trade: { label: 'Flooring trade', feeds: [
+    gn('commercial flooring site:floordaily.net'),
+    gn('flooring site:fcnews.net OR site:floorcoveringnews.net'),
+    gn('commercial flooring site:floortrendsmag.com'),
+    'https://floordaily.net/feed/',
+  ]},
+  competitive: { label: 'Competitors', feeds: [
+    gn('"Shaw Contract" OR Patcraft OR "Mohawk Group" flooring'),
+    gn('Interface flooring OR Tarkett OR Mannington OR Milliken flooring'),
+  ]},
+  sustainability: { label: 'Sustainability & compliance', feeds: [
+    gn('commercial flooring EPD OR HPD OR "Declare label" OR "Red List"'),
+    gn('"embodied carbon" OR "Buy Clean" OR "PVC-free" building materials flooring'),
+  ]},
+  sectors: { label: 'Sectors', feeds: [
+    gn('airport terminal OR aviation flooring OR "terminal renovation" design'),
+    gn('senior living OR healthcare construction flooring design'),
+    gn('corporate office "return to office" OR workplace renovation design flooring'),
+    gn('"higher education" OR "K-12" school construction bond flooring'),
+    gn('multifamily OR "student housing" development flooring design'),
+  ]},
+  indicators: { label: 'Market indicators', feeds: [
+    gn('"Architecture Billings Index" AIA'),
+    gn('nonresidential construction spending outlook'),
+    gn('office vacancy OR commercial real estate construction outlook'),
+  ]},
+  trends: { label: 'Design trends', feeds: [
+    gn('commercial interior design trends carpet OR flooring'),
+    gn('NeoCon commercial interiors flooring'),
+  ]},
+  events: { label: 'Industry events', feeds: [
+    gn('NeoCon OR "HD Expo" OR "Healthcare Design" OR "Environments for Aging" conference'),
+  ]},
+};
+
+// The ordered list of category tabs the UI shows (Account triggers first).
+const NEWS_GROUPS = [
+  { key: 'triggers', label: 'Account triggers' },
+  ...Object.entries(FEED_GROUPS).map(([key, g]) => ({ key, label: g.label })),
 ];
-let newsCache = { items: [], fetchedAt: 0 };
+
+// Assemble the full tagged feed list for a fetch: watchlist triggers + the
+// static groups + any custom feeds the user added in Settings.
+function buildFeeds() {
+  const accounts = (db.settings && Array.isArray(db.settings.accounts) && db.settings.accounts.length)
+    ? db.settings.accounts : DEFAULT_ACCOUNTS;
+  const list = [];
+  accounts.forEach(a => { if (a) list.push({ url: triggerQuery(a), category: 'triggers', label: 'Account triggers', tag: a }); });
+  Object.entries(FEED_GROUPS).forEach(([key, g]) => g.feeds.forEach(u => list.push({ url: u, category: key, label: g.label })));
+  ((db.settings && db.settings.feeds) || []).forEach(u => { if (u) list.push({ url: u, category: 'custom', label: 'My feeds' }); });
+  return list;
+}
+
+let newsCache = { items: [], fetchedAt: 0, groups: NEWS_GROUPS };
 const NEWS_TTL = 15 * 60 * 1000;
 
 app.get('/api/news', async (req, res) => {
@@ -197,16 +297,21 @@ app.get('/api/news', async (req, res) => {
   if (!refresh && newsCache.items.length && Date.now() - newsCache.fetchedAt < NEWS_TTL) {
     return res.json(newsCache);
   }
-  const feeds = (db.settings && db.settings.feeds && db.settings.feeds.length) ? db.settings.feeds : DEFAULT_FEEDS;
+  const feeds = buildFeeds();
   try {
-    const results = await Promise.allSettled(feeds.map(f => fetchFeed(f)));
+    const results = await Promise.allSettled(feeds.map(f =>
+      fetchFeed(f.url).then(items => items.map(it => ({ ...it, category: f.category, categoryLabel: f.label, tag: f.tag || '' })))
+    ));
     let items = [];
     results.forEach(r => { if (r.status === 'fulfilled') items = items.concat(r.value); });
     // dedupe by title, sort by date desc
     const seen = new Set();
     items = items.filter(it => { const k = (it.title || '').toLowerCase().slice(0, 80); if (seen.has(k)) return false; seen.add(k); return true; });
     items.sort((a, b) => (new Date(b.date || 0)) - (new Date(a.date || 0)));
-    newsCache = { items: items.slice(0, 40), fetchedAt: Date.now() };
+    // which categories actually returned anything (for the UI tabs)
+    const present = new Set(items.map(i => i.category));
+    const groups = NEWS_GROUPS.filter(g => present.has(g.key));
+    newsCache = { items: items.slice(0, 150), fetchedAt: Date.now(), groups };
     res.json(newsCache);
   } catch (e) {
     res.status(502).json({ error: 'Could not fetch feeds: ' + e.message, items: newsCache.items, fetchedAt: newsCache.fetchedAt });
