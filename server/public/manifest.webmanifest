@@ -1,0 +1,16 @@
+{
+  "name": "Conway Sales HQ",
+  "short_name": "Conway HQ",
+  "description": "Tom Conway's private sales command center.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#2c4639",
+  "theme_color": "#3f6151",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
