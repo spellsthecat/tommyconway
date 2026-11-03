@@ -506,6 +506,35 @@ VIEWS.welcome=(root)=>{
 
 VIEWS.overview=(root)=>{
   $('#pageSub').textContent=greeting();
+
+  // ---------- TODAY: the few things that matter most, right up top ----------
+  const todays=[];
+  S.deals.filter(d=>d.nextDate&&new Date(d.nextDate)<Date.now()&&!['Won','Lost'].includes(d.stage))
+    .sort((a,b)=>new Date(a.nextDate)-new Date(b.nextDate)).slice(0,2)
+    .forEach(d=>todays.push({icon:'⏰',label:(d.next||'Follow up'),who:d.client||'A deal',go:()=>{go('pipeline');setTimeout(()=>editDeal(d.id),60);}}));
+  S.clients.map(c=>({c,days:daysSince(c.lastTouch)})).filter(x=>x.days>=45).sort((a,b)=>b.days-a.days).slice(0,2)
+    .forEach(({c,days})=>todays.push({icon:'👋',label:'Reconnect — '+(days===Infinity?'no touch logged':days+' days quiet'),who:c.name||c.company||'A contact',go:()=>go('followups')}));
+  S.leads.filter(l=>l.priority==='High'&&(l.status==='New'||!l.status)).slice(0,3)
+    .forEach(l=>todays.push({icon:'⭐',label:'Reach out — '+(l.title||'high-priority lead'),who:(l.name||'')+(l.company?(' · '+l.company):''),go:()=>go('leads')}));
+  const todo=todays.slice(0,5);
+  const tcard=el('div',{class:'card',style:'border-left:3px solid var(--accent);margin-bottom:18px'});
+  const th=el('div',{class:'card-h'}); th.append(el('h3',{},'Today — start here'), el('div',{class:'spacer',style:'flex:1'}), el('span',{class:'faint',style:'font-size:12px'}, todo.length? (todo.length+' to move') : 'all clear ✓'));
+  tcard.append(th);
+  const tb=el('div',{class:'card-b',style:'padding-top:4px'});
+  if(!todo.length){ tb.append(emptyBox('🎉','You’re all caught up','No overdue steps, quiet contacts, or hot leads waiting. Go sell.')); }
+  else { todo.forEach(t=>{
+    const row=el('div',{style:'display:flex;align-items:center;gap:12px;padding:12px 4px;cursor:pointer;border-bottom:1px solid var(--line)',onclick:t.go});
+    row.append(
+      el('div',{style:'font-size:20px;width:26px;text-align:center;flex:0 0 auto'},t.icon),
+      el('div',{style:'flex:1;min-width:0'}, el('div',{style:'font-weight:600;line-height:1.3'},t.label), el('div',{class:'mini muted',style:'white-space:nowrap;overflow:hidden;text-overflow:ellipsis'},t.who)),
+      el('span',{class:'btn sm',style:'pointer-events:none;flex:0 0 auto'},'Go →')
+    );
+    row.addEventListener('mouseover',()=>row.style.background='var(--surface-2)');
+    row.addEventListener('mouseout',()=>row.style.background='');
+    tb.append(row);
+  }); const last=tb.lastChild; if(last) last.style.borderBottom='none'; }
+  tcard.append(tb); root.append(tcard);
+
   const active=S.deals.filter(d=>!['Won','Lost'].includes(d.stage));
   const won=S.deals.filter(d=>d.stage==='Won');
   const lost=S.deals.filter(d=>d.stage==='Lost');
