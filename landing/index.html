@@ -170,5 +170,16 @@
     </footer>
   </main>
   <script>document.getElementById('yr').textContent=new Date().getFullYear();</script>
+  <script>
+  /* Triple-click Tom's photo to slip into the private admin dashboard. */
+  (function(){
+    var p=document.querySelector('.portrait'); if(!p) return;
+    var n=0,t;
+    p.addEventListener('click',function(){
+      n++; clearTimeout(t); t=setTimeout(function(){n=0;},600);
+      if(n>=3){ n=0; location.href='https://admin.tommyconway.net'; }
+    });
+  })();
+  </script>
 </body>
 </html>
