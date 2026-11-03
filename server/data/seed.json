@@ -1,0 +1,71 @@
+{
+  "settings": {
+    "profile": {
+      "name": "Tommy Conway",
+      "company": "Milliken & Company",
+      "title": "Global Account Manager",
+      "bio": "~20 years in commercial flooring. Specializes in national/global account management across workplace, multifamily, student housing and senior living. A&D-led, specification-driven selling. Based in Gig Harbor, WA; strong Pacific Northwest design network."
+    },
+    "feeds": []
+  },
+  "deals": [
+    {
+      "id": "seed-d1", "client": "CannonDesign — Seattle", "project": "Corporate HQ workplace refresh",
+      "stage": "Specified", "value": 185000, "currency": "USD", "prob": 50, "sqft": 72000,
+      "region": "Pacific NW", "sector": "Workplace", "channel": "A&D spec",
+      "next": "Deliver updated spec package + samples", "nextDate": "2026-11-10",
+      "notes": "Example deal — edit or delete. Designer leaning toward a competitor on price; position warranty + lead time."
+    },
+    {
+      "id": "seed-d2", "client": "Pacific Senior Living Group", "project": "3-property senior living portfolio",
+      "stage": "Proposal", "value": 240000, "currency": "USD", "prob": 65, "sqft": 110000,
+      "region": "OR / WA", "sector": "Senior Living", "channel": "Developer",
+      "next": "Follow up on proposal; confirm phasing", "nextDate": "2026-11-05",
+      "notes": "Example deal. Multi-phase; good expansion potential if phase 1 goes well."
+    },
+    {
+      "id": "seed-d3", "client": "Convergence Architecture", "project": "Student housing — PSU adjacent",
+      "stage": "Qualified", "value": 96000, "currency": "USD", "prob": 25, "sqft": 54000,
+      "region": "Portland, OR", "sector": "Student Housing", "channel": "A&D spec",
+      "next": "Lunch-and-learn on durable modular line", "nextDate": "2026-11-18",
+      "notes": "Example deal. Early — build the relationship and get specified."
+    },
+    {
+      "id": "seed-d4", "client": "Northwest Multifamily Partners", "project": "Mixed-use amenity + corridors",
+      "stage": "Won", "value": 128000, "currency": "USD", "prob": 100, "sqft": 61000,
+      "region": "Seattle", "sector": "Multifamily", "channel": "Dealer",
+      "next": "", "nextDate": "",
+      "notes": "Example closed deal (for the win-rate math)."
+    }
+  ],
+  "clients": [
+    { "id": "seed-c1", "name": "", "title": "Associate Principal", "company": "CannonDesign", "type": "A&D", "region": "Seattle, WA", "notes": "Example contact. Big workplace & healthcare practice." },
+    { "id": "seed-c2", "name": "", "title": "Principal / Interior Design", "company": "Convergence Architecture", "type": "A&D", "region": "Portland, OR", "notes": "Example contact. Student housing + civic." },
+    { "id": "seed-c3", "name": "", "title": "Principal", "company": "Copper Hues Interior Design", "type": "A&D", "region": "Portland, OR", "notes": "Example contact. Hospitality & senior living interiors." },
+    { "id": "seed-c4", "name": "", "title": "Business Owner", "company": "Regional Flooring Contractor", "type": "GC", "region": "Oregon", "notes": "Example contact. Installs across the metro." }
+  ],
+  "leads": [
+    { "id": "seed-l1", "name": "", "title": "Commercial Furniture Designer", "company": "Freelance / FF&E", "region": "US", "source": "LinkedIn", "status": "New", "fit": 3, "angle": "Example lead. FF&E designer — could pull flooring into furniture specs." },
+    { "id": "seed-l2", "name": "", "title": "AVP", "company": "Large A&D Firm", "region": "Pacific NW", "source": "Referral", "status": "Contacted", "fit": 4, "angle": "Example lead. Warm intro via mutual connection; large project volume." }
+  ],
+  "competitors": [
+    { "id": "seed-r1", "name": "Shaw Contract / Patcraft", "products": "Modular carpet, broadloom, LVT, resilient", "strength": "Huge portfolio, strong A&D relationships, deep sampling & logistics.", "weakness": "Can feel commoditized; differentiate on design story, sustainability and service." },
+    { "id": "seed-r2", "name": "Mohawk Group", "products": "Carpet tile, broadloom, LVT, rubber", "strength": "Scale, pricing power, broad distribution.", "weakness": "Less bespoke; win on tailored specs and responsiveness." },
+    { "id": "seed-r3", "name": "Interface", "products": "Carbon-neutral carpet tile, LVT, rubber", "strength": "Sustainability leadership & brand with designers.", "weakness": "Premium pricing; compete on total value + comparable sustainability credentials." },
+    { "id": "seed-r4", "name": "Tarkett", "products": "Resilient, LVT, carpet, linoleum", "strength": "Strong resilient/healthcare presence, global.", "weakness": "Carpet mindshare trails; lead with soft-surface design range." },
+    { "id": "seed-r5", "name": "Mannington Commercial", "products": "Carpet, LVT, resilient, rubber", "strength": "Service reputation, healthcare & education niches.", "weakness": "Smaller footprint; outflank on global account support." }
+  ],
+  "products": [
+    { "id": "seed-p1", "name": "Modular carpet tile (core line)", "category": "Modular carpet", "bestFor": "Workplace, education, multifamily corridors", "notes": "Placeholder — replace with your actual Milliken collection names. Lead with pattern/colorway range, durability and warranty." },
+    { "id": "seed-p2", "name": "Resilient / LVT", "category": "LVT", "bestFor": "Senior living, healthcare, high-traffic", "notes": "Placeholder. Note moisture performance, acoustics, and cleanability." },
+    { "id": "seed-p3", "name": "Entryway systems", "category": "Entryway", "bestFor": "Lobbies, high-traffic entrances", "notes": "Placeholder. Protects the rest of the floor; good attach/upsell." }
+  ],
+  "plans": [
+    {
+      "id": "seed-plan1", "title": "Milliken global accounts — Q1 2027 push", "status": "Active", "target": "$1.2M specified",
+      "body": "**Objective:** Deepen specification with top 5 A&D firms in the Pacific NW and convert 2 global accounts into multi-region programs.\n\n**Key targets:** CannonDesign, Convergence, and two national developers in senior living / multifamily.\n\n**Moves:**\n- Lunch-and-learns on the durable modular + PVC-free story\n- Get onto 3 standards/spec lists\n- Quarterly business review with each global account\n\n**Risks:** Incumbent pricing pressure; lead times.\n\n**Metrics:** # specs secured, pipeline $ created, win rate vs. incumbents.\n\n(Example plan — edit or replace.)"
+    }
+  ],
+  "intel": [],
+  "drafts": []
+}
