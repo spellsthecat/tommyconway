@@ -36,23 +36,54 @@ const SEED  = path.join(DATA_DIR, 'seed.json');
 app.use(express.json({ limit: '1mb' }));
 app.set('trust proxy', 1); // behind Caddy / Cloudflare
 
-/* ---------- optional basic auth (protect everything) ---------- */
-const AUTH_USER = process.env.ADMIN_USER;
+/* ---------- single-password login (cookie session; no username) ---------- */
+const crypto = require('crypto');
 const AUTH_PASS = process.env.ADMIN_PASS;
-if (AUTH_USER && AUTH_PASS) {
-  app.use((req, res, next) => {
-    const h = req.headers.authorization || '';
-    const [type, cred] = h.split(' ');
-    if (type === 'Basic' && cred) {
-      const [u, p] = Buffer.from(cred, 'base64').toString().split(':');
-      if (u === AUTH_USER && p === AUTH_PASS) return next();
+const AUTH_ON = !!AUTH_PASS;
+const TOKEN = AUTH_ON ? crypto.createHash('sha256').update('conway-hq::' + AUTH_PASS).digest('hex') : '';
+const OPEN_PATHS = new Set(['/login', '/api/login', '/manifest.webmanifest', '/sw.js', '/icon-180.png', '/icon-192.png', '/icon-512.png', '/favicon.ico']);
+function parseCookies(req) {
+  const h = req.headers.cookie || ''; const o = {};
+  h.split(';').forEach(p => { const i = p.indexOf('='); if (i > 0) o[p.slice(0, i).trim()] = p.slice(i + 1).trim(); });
+  return o;
+}
+const LOGIN_HTML = `<!doctype html><html lang="en"><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>Conway Sales HQ</title><meta name="theme-color" content="#3f6151"/>
+<link rel="apple-touch-icon" href="/icon-180.png"/><link rel="manifest" href="/manifest.webmanifest"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-title" content="Conway HQ"/>
+<style>*{box-sizing:border-box}body{margin:0;min-height:100dvh;display:grid;place-items:center;background:linear-gradient(160deg,#2c4639,#15201a);font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#eef2ef;padding:24px}
+.box{width:100%;max-width:340px;text-align:center}.mark{width:64px;height:64px;border-radius:16px;background:#3f6151;display:grid;place-items:center;margin:0 auto 18px;font-weight:700;font-size:22px;color:#fff;box-shadow:0 10px 30px -10px rgba(0,0,0,.5)}
+h1{font-size:19px;margin:0 0 4px;font-weight:650}p{margin:0 0 22px;color:#aebcb2;font-size:13.5px}
+input{width:100%;padding:13px 14px;border-radius:12px;border:1px solid #3c5346;background:#1c2a22;color:#fff;font-size:16px;outline:none}
+input:focus{border-color:#6f9a84}button{width:100%;margin-top:12px;padding:13px;border:0;border-radius:12px;background:#6f9a84;color:#13201a;font-weight:700;font-size:15px;cursor:pointer}
+button:active{transform:translateY(1px)}.err{color:#ffb4b4;font-size:13px;margin-top:12px;min-height:16px}</style></head>
+<body><div class="box"><div class="mark">TC</div><h1>Conway Sales HQ</h1><p>Enter your password to continue.</p>
+<form id="f"><input id="pw" type="password" autocomplete="current-password" placeholder="Password" autofocus/>
+<button type="submit">Sign in</button><div class="err" id="e"></div></form></div>
+<script>const f=document.getElementById('f'),pw=document.getElementById('pw'),e=document.getElementById('e');
+f.addEventListener('submit',async ev=>{ev.preventDefault();e.textContent='';try{const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw.value})});if(r.ok){location.href='/';}else{e.textContent='That password didn\\'t work.';pw.select();}}catch(x){e.textContent='Something went wrong — try again.';}});</script>
+</body></html>`;
+if (AUTH_ON) {
+  app.get('/login', (req, res) => res.type('html').send(LOGIN_HTML));
+  app.post('/api/login', (req, res) => {
+    const pw = (req.body && req.body.password) || '';
+    if (pw === AUTH_PASS) {
+      res.cookie('conway_auth', TOKEN, { httpOnly: true, sameSite: 'lax', secure: true, maxAge: 1000 * 60 * 60 * 24 * 180 });
+      return res.json({ ok: true });
     }
-    res.set('WWW-Authenticate', 'Basic realm="Conway Sales HQ"');
-    return res.status(401).send('Authentication required.');
+    return res.status(401).json({ error: 'Wrong password' });
   });
-  console.log('[auth] Basic auth is ON');
+  app.post('/api/logout', (req, res) => { res.clearCookie('conway_auth'); res.json({ ok: true }); });
+  app.use((req, res, next) => {
+    if (OPEN_PATHS.has(req.path)) return next();
+    if (parseCookies(req).conway_auth === TOKEN) return next();
+    if (req.path.startsWith('/api/')) return res.status(401).json({ error: 'Not authenticated' });
+    return res.redirect('/login');
+  });
+  console.log('[auth] Single-password login is ON');
 } else {
-  console.log('[auth] Basic auth is OFF (set ADMIN_USER & ADMIN_PASS to enable)');
+  console.log('[auth] Login is OFF (set ADMIN_PASS to enable)');
 }
 
 /* ---------- data store ---------- */
