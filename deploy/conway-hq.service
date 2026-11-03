@@ -1,0 +1,23 @@
+# systemd unit to keep the admin app running (auto-restart, starts on boot)
+# Install:
+#   sudo cp deploy/conway-hq.service /etc/systemd/system/conway-hq.service
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now conway-hq
+# Check:  sudo systemctl status conway-hq   |   journalctl -u conway-hq -f
+
+[Unit]
+Description=Conway Sales HQ (admin.tommyconway.net)
+After=network.target
+
+[Service]
+Type=simple
+# Change User and paths to match your server:
+User=www-data
+WorkingDirectory=/var/www/tommyconway/server
+ExecStart=/usr/bin/node server.js
+Restart=on-failure
+RestartSec=3
+# server.js auto-loads server/.env, so no EnvironmentFile needed.
+
+[Install]
+WantedBy=multi-user.target

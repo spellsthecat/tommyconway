@@ -1,0 +1,21 @@
+# ── Caddyfile for tommyconway.net ────────────────────────────────
+# Caddy gets free HTTPS certificates automatically (Let's Encrypt).
+# Put this at /etc/caddy/Caddyfile, then: sudo systemctl reload caddy
+#
+# Adjust the two paths/port below if you install somewhere else.
+
+# Public landing page (static)
+tommyconway.net, www.tommyconway.net {
+    root * /var/www/tommyconway/landing
+    file_server
+    encode gzip
+    # redirect www -> apex (optional)
+    @www host www.tommyconway.net
+    redir @www https://tommyconway.net{uri} permanent
+}
+
+# Private admin dashboard (Node app on port 3000)
+admin.tommyconway.net {
+    reverse_proxy 127.0.0.1:3000
+    encode gzip
+}
